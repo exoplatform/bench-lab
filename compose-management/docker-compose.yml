@@ -1,0 +1,11 @@
+version: '3'
+
+networks:
+  management:
+
+services:
+  loadbalancer:
+    image: traefik
+    ports:
+      - "80:80"
+      - "443:443"

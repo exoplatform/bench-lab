@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  mongo:
+    image: mongo:3.2
+    expose:
+      - 3306
+    networks:
+      - plf

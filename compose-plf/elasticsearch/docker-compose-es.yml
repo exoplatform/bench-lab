@@ -1,0 +1,12 @@
+version: '2'
+
+networks:
+  plf:
+
+services:
+  elasticsearch:
+    image: exoplatform/elasticsearch
+    expose:
+      - 9200
+    networks:
+      - plf

@@ -1,0 +1,29 @@
+version: '2'
+
+networks:
+  plf:
+
+volumes:
+  plf:
+
+services:
+  plf:
+    image: ${REGISTRY}/plf # TODO build
+    #image: plf
+    env_file: ../database/docker-compose-${DATABASE_TYPE}.env
+    environment: 
+      - EXO_CUSTOMER_VHOST=test.exoplatform.org
+      - EXO_DB_HOST=db
+      - constraint:node.labels.bench.plf==true
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    links:
+      - db:db
+    networks:
+      plf:
+    volumes:
+      - plf:/srv/exo
