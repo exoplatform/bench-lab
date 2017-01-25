@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: plf-database
+spec:
+  containers:
+  - name: plf-database
+    image: mysql:5.6
