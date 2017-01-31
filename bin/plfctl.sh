@@ -1,4 +1,6 @@
-#!/bin/bash -eux
+#!/bin/bash -eu
+
+HOME_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
 
 function printUsage() {
   echo "$0 [-d <database template>] -c <chat database template> <action>"
@@ -24,13 +26,12 @@ PLF_DATABASE_TEMPLATE=mysql
 CHAT_DATABASE_TEMPLATE=mongo
 ELASTICSEARCH_DATABASE_TEMPLATE=es
 
-DEFAULT_ACTION="up --force-recreate --no-deps -d"
-
 ACTION=DEFAULT_ACTION
 while getopts "d:c:e:p:h" opt; do
   case $opt in
     h)
       printUsage
+      exit 0;
       ;;
     d)
       PLF_DATABASE_TEMPLATE=$OPTARG
@@ -46,11 +47,16 @@ done
 
 shift $((OPTIND - 1))
 
+if [ $# -eq 0 ]; then
+  printUsage
+  exit 1
+fi
+
 ACTION=$1
 shift
 ACTION_PARAMS=$*
 
-case "${ACTION}" in 
+case "${ACTION}" in
   start)
     COMPOSE_ACTION="up --force-recreate --no-deps -d"
     COMPOSE_ACTION_PARAM=""
@@ -73,30 +79,29 @@ case "${ACTION}" in
     ;;
 esac
 
-PLF_DATABASE_COMPOSE="compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.yml"
+PLF_DATABASE_COMPOSE="${HOME_DIR}/compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.yml"
 if [ ! -e "${PLF_DATABASE_COMPOSE}" ]; then
   echo "PLF database compose is not found : ${PLF_DATABASE_COMPOSE}"
   exit 1
 fi
-PLF_DATABASE_ENV="compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.env"
+PLF_DATABASE_ENV="${HOME_DIR}/compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.env"
 
 if [ ! -e "${PLF_DATABASE_ENV}" ]; then
   echo "WARNING: PLF database env file not found : ${PLF_DATABASE_ENV}"
 fi
 
 if [ -n "${PLF_DATABASE_TEMPLATE}" ]; then
-  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.yml"
+  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f ${HOME_DIR}/compose-plf/database/docker-compose-$PLF_DATABASE_TEMPLATE.yml"
 fi
 
 if [ -n "${CHAT_DATABASE_TEMPLATE}" ]; then
-  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose-plf/chat/docker-compose-$CHAT_DATABASE_TEMPLATE.yml"
+  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f ${HOME_DIR}/compose-plf/chat/docker-compose-$CHAT_DATABASE_TEMPLATE.yml"
 fi
 
 if [ -n "${ELASTICSEARCH_DATABASE_TEMPLATE}" ]; then
-  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f compose-plf/elasticsearch/docker-compose-${ELASTICSEARCH_DATABASE_TEMPLATE}.yml"
+  COMPOSE_OPTIONS="${COMPOSE_OPTIONS} -f ${HOME_DIR}/compose-plf/elasticsearch/docker-compose-${ELASTICSEARCH_DATABASE_TEMPLATE}.yml"
 fi
 
 export PLF_DATABASE_TEMPLATE
 
-docker-compose -f compose-plf/plf/docker-compose-plf.yml $COMPOSE_OPTIONS $COMPOSE_ACTION $COMPOSE_ACTION_PARAM
-    
+docker-compose -f ${HOME_DIR}/compose-plf/plf/docker-compose-plf.yml $COMPOSE_OPTIONS $COMPOSE_ACTION $COMPOSE_ACTION_PARAM
