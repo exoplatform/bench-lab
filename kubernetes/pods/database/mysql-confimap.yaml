@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plf-database
+  namespace: default
+data:
+  type: mysql
+  user: exo
+  password: exo
+  port: 3306

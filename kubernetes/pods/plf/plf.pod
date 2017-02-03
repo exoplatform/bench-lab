@@ -1,31 +1,33 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: registry-tn.exoplatform.org/plf
+  name: plf
   labels:
-    purpose: demonstrate-envars
+    plf: "true"
 spec:
   containers:
   - name: plf
-    image: plf:latest
+    image: registry.containers.ovh.net/exo/plf:latest
     env:
-        - name: EXO_DB_TYPE
-          valueFrom:
-            configMapKeyRef:
-              name: plf-db
-              key: EXO_DB_TYPE
-        - name: EXO_DB_USER
-          valueFrom:
-            configMapKeyRef:
-              name: plf-db
-              key: EXO_DB_USER
-        - name: EXO_DB_PASSWORD
-          valueFrom:
-            configMapKeyRef:
-              name: plf-db
-              key: EXO_DB_PASSWORD
-        - name: EXO_DB_PORT
-          valueFrom:
-            configMapKeyRef:
-              name: plf-db
-              key: EXO_DB_PORT
+      - name: EXO_DB_HOST
+        value: plf-database
+      - name: EXO_DB_TYPE
+        valueFrom:
+          configMapKeyRef:
+            name: plf-db
+            key: EXO_DB_TYPE
+      - name: EXO_DB_USER
+        valueFrom:
+          configMapKeyRef:
+            name: plf-db
+            key: EXO_DB_USER
+      - name: EXO_DB_PASSWORD
+        valueFrom:
+          configMapKeyRef:
+            name: plf-db
+            key: EXO_DB_PASSWORD
+      - name: EXO_DB_PORT
+        valueFrom:
+          configMapKeyRef:
+            name: plf-db
+            key: EXO_DB_PORT

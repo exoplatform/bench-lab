@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: plf
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        plf: "true"
+    spec:
+      containers:
+      - name: plf
+        image: registry.containers.ovh.net/exo/plf
+        env:
+          - name: EXO_DB_HOST
+            value: plf-database
+          - name: EXO_DB_TYPE
+            valueFrom:
+              configMapKeyRef:
+                name: plf-db
+                key: EXO_DB_TYPE
+          - name: EXO_DB_USER
+            valueFrom:
+              configMapKeyRef:
+                name: plf-db
+                key: EXO_DB_USER
+          - name: EXO_DB_PASSWORD
+            valueFrom:
+              configMapKeyRef:
+                name: plf-db
+                key: EXO_DB_PASSWORD
+          - name: EXO_DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: plf-db
+                key: EXO_DB_PORT
+        ports:
+          - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plf
+spec:
+  selector:
+    plf: "true"
+  type: LoadBalancer
+  ports:
+    - port: 8080
+  # - name: plf
+  #   protocol: TCP
+  #   port: 8080
+  #   targetPort: 8080
+  #   NodePort: 30000
