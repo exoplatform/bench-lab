@@ -1,0 +1,15 @@
+# From
+# https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/registry
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: registry-pv
+  labels:
+    management: registry
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+      storage: 10Gi
+  hostPath:
+    path: /data/pv-registry
