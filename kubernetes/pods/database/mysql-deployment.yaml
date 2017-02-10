@@ -1,3 +1,5 @@
+## TODO create persistent volumes
+
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -16,15 +18,18 @@ spec:
           - name: MYSQL_USER
             valueFrom:
               configMapKeyRef:
-                name: plf-database
+                name: plf-config
                 key: EXO_DB_USER
           - name: MYSQL_PASSWORD
             valueFrom:
               configMapKeyRef:
-                name: plf-database
+                name: plf-config
                 key: EXO_DB_PASSWORD
           - name: MYSQL_DATABASE
-            value: plf
+            valueFrom:
+              configMapKeyRef:
+                name: plf-config
+                key: EXO_DB_NAME
           - name: MYSQL_ROOT_PASSWORD
             value: rootpwd
         ports:

@@ -2,54 +2,69 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: plf
+  labels:
+    name: "plf"
 spec:
+  progressDeadlineSeconds : 120
   replicas: 1
   template:
     metadata:
       labels:
-        plf: "true"
+        name: "plf"
     spec:
       containers:
       - name: plf
-        image: registry.containers.ovh.net/exo/plf
+        image: exoplatform/exo:latest
         env:
           - name: EXO_DB_HOST
             value: plf-database
           - name: EXO_DB_TYPE
             valueFrom:
               configMapKeyRef:
-                name: plf-db
+                name: plf-config
                 key: EXO_DB_TYPE
+          - name: EXO_DB_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: plf-config
+                key: EXO_DB_NAME
           - name: EXO_DB_USER
             valueFrom:
               configMapKeyRef:
-                name: plf-db
+                name: plf-config
                 key: EXO_DB_USER
           - name: EXO_DB_PASSWORD
             valueFrom:
               configMapKeyRef:
-                name: plf-db
+                name: plf-config
                 key: EXO_DB_PASSWORD
           - name: EXO_DB_PORT
             valueFrom:
               configMapKeyRef:
-                name: plf-db
+                name: plf-config
                 key: EXO_DB_PORT
+          - name: EXO_MONGO_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: plf-config
+                key: EXO_MONGO_HOST
+          - name: EXO_ES_EMBEDDED_DATA
+            valueFrom:
+              configMapKeyRef:
+                name: plf-config
+                key: EXO_ES_EMBEDDED_DATA
         ports:
           - containerPort: 8080
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: plf
+  name: "plf"
+  labels:
+    name: "plf"
 spec:
   selector:
-    plf: "true"
+      name: "plf"
   type: LoadBalancer
   ports:
     - port: 8080
-  # - name: plf
-  #   protocol: TCP
-  #   port: 8080
-  #   targetPort: 8080
-  #   NodePort: 30000

@@ -18,3 +18,5 @@ do
 done
 
 kubectl create configmap $1 ${PARAMS}
+
+kubectl describe configmap $1
