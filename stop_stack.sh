@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# #############################################################################
+# Initialize
+# #############################################################################
+SCRIPT_NAME="${0##*/}"
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Load common functions
+source ${SCRIPT_DIR}/_functions.sh
+
+
+pushd ${INSTANCE_DIR}
+
+docker-compose stop

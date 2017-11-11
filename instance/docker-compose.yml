@@ -1,0 +1,96 @@
+networks:
+  db: {}
+  front: {}
+  mail: {}
+  mongo: {}
+  plf: {}
+  search: {}
+services:
+  db:
+    environment:
+      MYSQL_DATABASE: plf
+      MYSQL_PASSWORD: plf
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_USER: plf
+    image: mysql:5.7
+    networks:
+      db: null
+    volumes:
+    - db:/var/lib/mysql:rw
+  front:
+    image: httpd:2.4.29
+    networks:
+      front: null
+      mail: null
+    ports:
+    - 80:80/tcp
+    volumes:
+    - /Users/vsellier/dev/github.com/exoplatform/bench-lab/instance/config/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    - /Users/vsellier/dev/github.com/exoplatform/bench-lab/instance/config/apache/include:/usr/local/apache2/conf/include:ro
+  mail:
+    environment:
+      MH_MONGO_COLLECTION: messages
+      MH_MONGO_DB: mailhog
+      MH_MONGO_URI: mongo:27017
+      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MH_STORAGE: mongodb
+      MH_UI_WEB_PATH: mail
+    image: mailhog/mailhog
+    networks:
+      mail: null
+      mongo: null
+  mongo:
+    image: mongo:3.2
+    networks:
+      mongo: null
+    volumes:
+    - mongo_data:/data/db:rw
+  plf1:
+    environment:
+      EXO_ADDONS_LIST: null
+      EXO_ADDONS_REMOVE_LIST: null
+      EXO_DB_HOST: db
+      EXO_DB_NAME: plf
+      EXO_DB_PASSWORD: plf
+      EXO_DB_POOL_IDM_INIT_SIZE: 1
+      EXO_DB_POOL_IDM_MAX_SIZE: 10
+      EXO_DB_POOL_JCR_INIT_SIZE: 2
+      EXO_DB_POOL_JCR_MAX_SIZE: 5
+      EXO_DB_POOL_JPA_INIT_SIZE: 3
+      EXO_DB_POOL_JPA_MAX_SIZE: 20
+      EXO_DB_TYPE: mysql
+      EXO_DB_USER: plf
+      EXO_ES_EMBEDDED: "false"
+      EXO_ES_HOST: search
+      EXO_JVM_SIZE_MAX: 3g
+      EXO_JVM_SIZE_MIN: 2g
+      EXO_MAIL_SMTP_HOST: mail
+      EXO_MAIL_SMTP_PORT: '1025'
+      EXO_PROXY_PORT: 80
+      EXO_PROXY_SSL: "false"
+      EXO_PROXY_VHOST: localhost
+    image: exoplatform/exo:5.0_latest
+    networks:
+      db: null
+      front: null
+      mongo: null
+      plf: null
+      search: null
+    volumes:
+    - plf_node1:/srv/exo:rw
+  search:
+    environment:
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    image: exoplatform/elasticsearch:1.1.0
+    networks:
+      search: null
+    volumes:
+    - search_data:/usr/share/elasticsearch/data:rw
+version: '3.0'
+volumes:
+  db: {}
+  mongo_data: {}
+  plf_node1: {}
+  plf_shared: {}
+  search_data: {}
+

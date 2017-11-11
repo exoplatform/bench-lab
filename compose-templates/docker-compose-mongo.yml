@@ -1,0 +1,15 @@
+version: '3.0'
+
+networks:
+  mongo:
+
+volumes:
+  mongo_data:
+
+services:
+  mongo:
+    image: mongo:3.2
+    volumes:
+      - mongo_data:/data/db:rw
+    networks:
+      mongo:

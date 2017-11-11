@@ -1,0 +1,17 @@
+version: '3.0'
+
+networks:
+  front:
+
+services:
+  front:
+    image: httpd:2.4.29
+#    environment:
+    ports:
+      - 80:80
+    volumes:
+      - $PWD/config/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - $PWD/config/apache/include:/usr/local/apache2/conf/include:ro
+    networks:
+      front:
+      mail:

@@ -1,0 +1,20 @@
+version: '3.0'
+
+volumes:
+  db:
+
+networks:
+  db:
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: plf
+      MYSQL_USER: plf
+      MYSQL_PASSWORD: plf
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - db

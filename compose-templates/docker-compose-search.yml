@@ -1,0 +1,17 @@
+version: '3.0'
+
+networks:
+  search:
+
+volumes:
+  search_data:
+
+services:
+  search:
+    image: exoplatform/elasticsearch:1.1.0
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - search_data:/usr/share/elasticsearch/data:rw
+    networks:
+      search:

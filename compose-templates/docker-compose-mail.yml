@@ -1,0 +1,18 @@
+version: '3.0'
+
+networks:
+  mail:
+
+services:
+  mail:
+    image: mailhog/mailhog
+    environment:
+      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MH_STORAGE: mongodb
+      MH_MONGO_URI: mongo:27017
+      MH_MONGO_DB: mailhog
+      MH_MONGO_COLLECTION: messages
+      MH_UI_WEB_PATH: mail
+    networks:
+      mongo:
+      mail:
