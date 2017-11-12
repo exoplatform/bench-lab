@@ -9,6 +9,8 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Load common functions
 source ${SCRIPT_DIR}/_functions.sh
 
+echo "*** Environment : ${ENVIRONMENT} ***"
+
 function wait_plf_startup() {
   local plf_started=0
   echo Waiting for plf to start ...
@@ -48,6 +50,10 @@ cp -f ${CONF_DIR}/apache/include/proxy.conf ${INSTANCE_DIR}/config/apache/includ
 pushd ${INSTANCE_DIR}
 
 echo Build docker-compose configuration
+
+cp -v ${CONF_DIR}/docker-compose-${ENVIRONMENT}.env ${INSTANCE_DIR}/docker-compose.env
+ln -s -f ${INSTANCE_DIR}/docker-compose.env ${INSTANCE_DIR}/.env
+
 # TODO Parameterization
 # - database configuration
 # - PLF properties
