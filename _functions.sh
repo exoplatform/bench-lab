@@ -11,3 +11,7 @@ INSTANCE_DIR=instance
 TEMPLATE_DIR=${SCRIPT_DIR}/compose-templates
 INSTANCE_DIR=${SCRIPT_DIR}/instance
 CONF_DIR=${SCRIPT_DIR}/config
+
+PLF_SERVER_COUNT=1
+
+COMPOSE_CMD=docker-compose
