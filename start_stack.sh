@@ -37,6 +37,17 @@ addOrReplaceEnvProperty EXO_DB_POOL_JCR_MAX_SIZE  5
 addOrReplaceEnvProperty EXO_DB_POOL_JPA_INIT_SIZE  3
 addOrReplaceEnvProperty EXO_DB_POOL_JPA_MAX_SIZE  20
 
+addOrReplaceEnvProperty EXO_CLUSTER_IP_RANGE "172.16.251.0/24"
+addOrReplaceEnvProperty EXO_CLUSTER_INSTANCE_IP_PREFIX 172.16.251
+
+forceEnvProperty NODES_NAMES "plf1"
+forceEnvProperty NODES_IPS   "${EXO_CLUSTER_INSTANCE_IP_PREFIX}.1"
+
+for i in $(seq 2 $EXO_NODE_COUNT); do
+    forceEnvProperty NODES_NAMES "${NODES_NAMES},plf${i}"
+    forceEnvProperty NODES_IPS   "${NODES_IPS},${EXO_CLUSTER_INSTANCE_IP_PREFIX}.${i}"
+done
+
 # Apache Workers
 addOrReplaceEnvProperty APACHE_THREAD_PER_CHILD 20
 addOrReplaceEnvProperty APACHE_SERVER_LIMIT     25
@@ -84,7 +95,7 @@ ${COMPOSE_CMD} \
 
 cat ${INSTANCE_DIR}/docker-compose.yml
 
-echo Starting services
+echo Starting services and first PLF Node
 ${COMPOSE_CMD} up -d
 
 wait_plf_startup startup

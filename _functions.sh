@@ -82,12 +82,6 @@ function plfTemplate() {
   local target=docker-compose-plf-node${nodeId}.yml
 
   forceEnvProperty NODE_ID ${nodeId} ${SPEC_ENV_FILE}
-  if [ -z "${NODES_NAMES}" ]; then
-    forceEnvProperty NODES_NAMES plf${nodeId}
-  else
-    forceEnvProperty NODES_NAMES ${NODES_NAMES},plf${nodeId}
-  fi
-#  loadProperties ${SPEC_ENV_FILE}
 
   ${DOCKER_TEMPLATE_CMD} /templates/compose/${templateName} /target/compose-fragment/${target}
 }
