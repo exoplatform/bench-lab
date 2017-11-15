@@ -12,6 +12,7 @@ services:
     volumes:
       - $PWD/config/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
       - $PWD/config/apache/include:/usr/local/apache2/conf/include:ro
+      - $PWD/logs/apache2:/usr/local/apache2/logs
     networks:
       front:
       mail:

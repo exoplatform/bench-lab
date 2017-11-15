@@ -9,6 +9,11 @@ import (
 	"text/template"
 )
 
+type Variable struct {
+	V string
+	S []string
+}
+
 func main() {
 
 	if len(os.Args) != 3 {
@@ -35,7 +40,7 @@ func main() {
 		log.Fatal("Error creating file ", target, " : ", err)
 	}
 
-	fmt.Print("Populate template", templatePath, " into ", target, "...")
+	fmt.Print("Populate template ", templatePath, " into ", target, "...")
 
 	err = t.Execute(f, envMap)
 	if err != nil {
@@ -45,13 +50,14 @@ func main() {
 
 }
 
-func envToMap() (map[string]string, error) {
-	envMap := make(map[string]string)
+func envToMap() (map[string]Variable, error) {
+	envMap := make(map[string]Variable)
 	var err error
 
 	for _, v := range os.Environ() {
 		split_v := strings.Split(v, "=")
-		envMap[split_v[0]] = split_v[1]
+
+		envMap[split_v[0]] = Variable{V:split_v[1], S: strings.Split(split_v[1], ",")}
 	}
 
 	return envMap, err
