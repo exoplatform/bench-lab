@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
+	"strconv"
 )
 
 type Variable struct {
 	V string
 	S []string
+	I int
 }
 
 func main() {
@@ -57,7 +59,10 @@ func envToMap() (map[string]Variable, error) {
 	for _, v := range os.Environ() {
 		split_v := strings.Split(v, "=")
 
-		envMap[split_v[0]] = Variable{V:split_v[1], S: strings.Split(split_v[1], ",")}
+		// Create an int value if possible
+		i, _ := strconv.Atoi(split_v[1])
+
+		envMap[split_v[0]] = Variable{V:split_v[1], S: strings.Split(split_v[1], ","), I: i}
 	}
 
 	return envMap, err

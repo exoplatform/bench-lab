@@ -8,15 +8,20 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: {{ .EXO_CLUSTER_IP_RANGE.V }}
+        - subnet: {{.EXO_CLUSTER_IP_RANGE.V}}
 {{- end }}
+  db:
+  search:
+  mongo:
+  front:
 volumes:
   plf_node{{.NODE_ID.V}}:
   plf_shared:
 
 services:
-  plf1:
+  plf{{.NODE_ID.V}}:
     image: exoplatform/exo:5.0_latest
+    hostname: plf{{.NODE_ID.V}}
     environment:
       EXO_ADDONS_LIST:
       EXO_ADDONS_REMOVE_LIST:
@@ -38,8 +43,8 @@ services:
       EXO_PROXY_PORT: 80
 {{- if ne .EXO_NODE_COUNT.V "1" }}
       EXO_CLUSTER: "true"
-      EXO_CLUSTER_HOSTS: "{{ .NODES_IPS.V }}"
-      EXO_JGROUPS_ADDR: "{{ .EXO_CLUSTER_INSTANCE_IP_PREFIX.V }}.{{.NODE_ID.V}}"
+      EXO_CLUSTER_HOSTS: "{{.NODES_IPS.V}}"
+      EXO_JGROUPS_ADDR: "{{.NODE_IP.V}}"
       EXO_FILE_STORAGE_DIR: /srv/exo/shared/files
       EXO_JCR_STORAGE_DIR: /srv/exo/shared/jcrvalues
 {{- end }}
@@ -53,19 +58,23 @@ services:
       EXO_JMX_RMI_SERVER_PORT: 10002
       EXO_JMX_RMI_SERVER_HOSTNAME: plf{{.NODE_ID.V}}
 
+      EXO_REGISTRATION: {{.EXO_REGISTRATION}}
     volumes:
       - plf_node{{.NODE_ID.V}}:/srv/exo
       - plf_shared:/srv/exo/shared
     networks:
-      - db
-      - plf
-      - search
-      - mongo
-      - front
+      db:
+      plf:
+{{- if ne .EXO_NODE_COUNT.V "1" }}
+        ipv4_address: "{{.NODE_IP.V}}"
+{{- end }}
+      search:
+      mongo:
+      front:
 
-  jmxtrans:
+  jmxtrans{{.NODE_ID.V}}:
     image: exoplatform/jmxtrans:265_1
-    container_name: jmxtrans
+    container_name: jmxtrans{{.NODE_ID.V}}
     environment:
       TARGET_JMX_HOST: plf{{.NODE_ID.V}}
       TARGET_HOSTNAME: plf{{.NODE_ID.V}}

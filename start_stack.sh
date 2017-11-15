@@ -28,8 +28,10 @@ pushd ${INSTANCE_DIR}
 echo Build docker-compose configuration
 
 #### Configuration ####
+SERVICES="front db mongo search mail plf1 jmxtrans1"
 ##### PLF #####
 addOrReplaceEnvProperty EXO_NODE_COUNT 1
+addOrReplaceEnvProperty EXO_REGISTRATION false
 addOrReplaceEnvProperty EXO_DB_POOL_IDM_INIT_SIZE  1
 addOrReplaceEnvProperty EXO_DB_POOL_IDM_MAX_SIZE  10
 addOrReplaceEnvProperty EXO_DB_POOL_JCR_INIT_SIZE  2
@@ -41,29 +43,30 @@ addOrReplaceEnvProperty EXO_CLUSTER_IP_RANGE "172.16.251.0/24"
 addOrReplaceEnvProperty EXO_CLUSTER_INSTANCE_IP_PREFIX 172.16.251
 
 forceEnvProperty NODES_NAMES "plf1"
-forceEnvProperty NODES_IPS   "${EXO_CLUSTER_INSTANCE_IP_PREFIX}.1"
+forceEnvProperty NODES_IPS   "${EXO_CLUSTER_INSTANCE_IP_PREFIX}.11"
 
-for i in $(seq 2 $EXO_NODE_COUNT); do
-    forceEnvProperty NODES_NAMES "${NODES_NAMES},plf${i}"
-    forceEnvProperty NODES_IPS   "${NODES_IPS},${EXO_CLUSTER_INSTANCE_IP_PREFIX}.${i}"
-done
+if [ ${EXO_NODE_COUNT} -gt 1 ]; then
+    for i in $(seq 2 $EXO_NODE_COUNT); do
+        forceEnvProperty NODES_NAMES "${NODES_NAMES},plf${i}"
+        forceEnvProperty NODES_IPS   "${NODES_IPS},${EXO_CLUSTER_INSTANCE_IP_PREFIX}.$((${i} +10))"
+
+        SLAVE_COMPOSE_FILES="${SLAVE_COMPOSE_FILES} -f ${INSTANCE_DIR}/compose-fragment/docker-compose-plf-node${i}.yml"
+        SLAVE_SERVICES="${SLAVE_SERVICES} plf${i} jmxtrans${i}"
+    done
+fi
+
+plfTemplate 1
+if [ ${EXO_NODE_COUNT} -gt 1 ]; then
+    for i in $(seq 2 $EXO_NODE_COUNT); do
+        plfTemplate $i
+    done
+fi
 
 # Apache Workers
 addOrReplaceEnvProperty APACHE_THREAD_PER_CHILD 20
 addOrReplaceEnvProperty APACHE_SERVER_LIMIT     25
 addOrReplaceEnvProperty APACHE_ASYNC_REQUEST_WORKER 2
 addOrReplaceEnvProperty APACHE_MAX_REQUEST_WORKER 500
-
-
-loadProperties
-
-#### PLF composes ####
-plfId=0
-while [ ${plfId} -lt ${EXO_NODE_COUNT} ]; do
-    plfId=$(( $plfId + 1 ))
-    echo Build docker-compose for plf node ${plfId}
-    plfTemplate $plfId
-done
 
 #### Apache compose ####
 template compose/docker-compose-apache.yml compose-fragment/docker-compose-apache.yml
@@ -76,7 +79,6 @@ cp -rfv ${CONF_DIR}/apache ${INSTANCE_DIR}/config
 #cp -f ${CONF_DIR}/apache/include/proxy.conf ${INSTANCE_DIR}/config/apache/include
 template config/apache/httpd.conf
 template config/apache/include/proxy.conf config/apache/include/proxy.conf
-
 
 # TODO Parameterization
 # - database configuration
@@ -91,18 +93,27 @@ ${COMPOSE_CMD} \
    -f ${TEMPLATE_DIR}/compose/docker-compose-mongo.yml \
    -f ${TEMPLATE_DIR}/compose/docker-compose-mail.yml \
    -f ${INSTANCE_DIR}/compose-fragment/docker-compose-apache.yml \
+   ${SLAVE_COMPOSE_FILES} \
    config > ${INSTANCE_DIR}/docker-compose.yml
 
-cat ${INSTANCE_DIR}/docker-compose.yml
+echo Starting services and the first PLF Node
+${COMPOSE_CMD} -f ${INSTANCE_DIR}/docker-compose.yml up -d --force-recreate ${SERVICES}
 
-echo Starting services and first PLF Node
-${COMPOSE_CMD} up -d
-
-wait_plf_startup startup
+wait_plf_startup ${INSTANCE_DIR}/docker-compose.yml plf1
 if [ $? -ne 0 ]; then
   echo Error detected during stack startup. Stopping...
   ${SCRIPT_DIR}/stop_stack.sh
   exit 1
+fi
+
+if [ ${EXO_NODE_COUNT} -gt 1 ]; then
+  echo "Starting the other plf nodes..."
+  ${COMPOSE_CMD} -f ${INSTANCE_DIR}/docker-compose.yml up -d --force-recreate ${SLAVE_SERVICES}
+
+  for i in $(seq 2 $EXO_NODE_COUNT); do
+      wait_plf_startup ${INSTANCE_DIR}/docker-compose-slaves.yml plf${i} &
+  done
+  wait
 fi
 
 echo "Stack started successfully"

@@ -9,6 +9,7 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Load common functions
 source ${SCRIPT_DIR}/_functions.sh
 
+loadProperties
 
 pushd ${INSTANCE_DIR}
 
