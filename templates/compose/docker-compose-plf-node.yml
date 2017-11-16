@@ -58,7 +58,7 @@ services:
       EXO_JMX_RMI_SERVER_PORT: 10002
       EXO_JMX_RMI_SERVER_HOSTNAME: plf{{.NODE_ID.V}}
 
-      EXO_REGISTRATION: {{.EXO_REGISTRATION}}
+      EXO_REGISTRATION: "{{.EXO_REGISTRATION.V}}"
     volumes:
       - plf_node{{.NODE_ID.V}}:/srv/exo
       - plf_shared:/srv/exo/shared
