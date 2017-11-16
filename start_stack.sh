@@ -10,11 +10,11 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Load common functions
 source ${SCRIPT_DIR}/_functions.sh
-
+source ${SCRIPT_DIR}/_plf_functions.sh
 
 echo "*** Environment : ${ENVIRONMENT} ***"
 
-init
+plf_init
 
 
 #cp -v ${CONF_DIR}/docker-compose-${ENVIRONMENT}.env ${INSTANCE_DIR}/docker-compose.env
