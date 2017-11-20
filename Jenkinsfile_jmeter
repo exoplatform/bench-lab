@@ -1,0 +1,112 @@
+pipeline {
+    parameters {
+        booleanParam(name: 'initOnly', defaultValue: false, description: 'Check to only refresh the job definition')
+        booleanParam(name: 'debug', defaultValue: false, description: 'Activate management script debug')
+        string(name: 'jmeterAgent', defaultValue: '', description: 'The agent tag to run the jmeter bench')
+        string(name: 'managementScriptsGitUrl', defaultValue: 'http://localhost:10080/exo-gogs/bench-lab.git', description: 'The management scripts')
+        string(name: 'managementScriptsGitBranch', defaultValue: 'ITOP-3476', description: 'The branch to checkout for the management scripts')
+        string(name: 'benchScriptGitUrl', defaultValue: 'http://localhost:10080/exo-gogs/qa-performance-testsuite.git', description: 'The git repository containing the jmeter scenario')
+        string(name: 'benchScriptGitBranch', defaultValue: 'master', description: 'The git branch to clone')
+        string(name: 'jmeterImage', defaultValue: 'exoplatform/jmeter', description: 'The image to execute')
+        string(name: 'jmeterImageVersion', defaultValue: 'latest', description: 'The image version to execute')
+        string(name: 'jmeterHeap', defaultValue: '512m', description: 'The jmeter heap to define')
+        string(name: 'jmeterScript', defaultValue: 'performance/src/test/jmeter/plf_4.4.x/platform-enterprise/PERF_PLF_INTRANET_GENERIC.jmx', description: 'The jmeter script to execute, relative path in the benchScriptGitUrl repo')
+        string(name: 'server', defaultValue: 'http://plfServer', description: 'The plf server to bench')
+    }
+
+    environment {
+        gitCredentialId = 'ciagent'
+        benchScriptsDir = 'bench_scripts'
+        managementScriptsDir = 'management'
+        reportsDir = "reports"
+        JMETER_IMAGE = "${params.jmeterImage}"
+        JMETER_IMAGE_VERSION = "${params.jmeterImageVersion}"
+        JMETER_SCRIPT = "${params.jmeterScript}"
+        JMETER_SCRIPT_DIR = "${benchScriptsDir}"
+        JMETER_REPORT_DIR = "${env.reportsDir}"
+        BENCHENV_Server = "${params.server}"
+    }
+
+    agent none
+
+    stages {
+        stage('Info') {
+            when {
+                expression { return params.initOnly == false }
+            }
+            steps {
+                echo "Init only : ${params.initOnly}"
+                echo "Jmeter will be launched on the node ${params.jmeterAgent}"
+                echo "Git repository : ${params.benchScriptGitUrl}"
+                echo "Jmeter script : ${env.JMETER_SCRIPT}"
+            }
+        }
+        stage('Clean workspace') {
+            when {
+                expression { return params.initOnly == false }
+            }
+            steps {
+                node("${params.jmeterAgent}") {
+                    dir("${env.benchScriptsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+                    dir("${env.managementScriptsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+                    dir("${env.reportsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+
+                }
+            }
+         }
+        stage('Prepare jmeter workspace') {
+            when {
+                expression { return params.initOnly == false }
+            }
+
+            steps("Prepare the jmeter environment") {
+                node("${params.jmeterAgent}") {
+                    // checkout scm with credentials to jmeter folder (by default)
+                    dir("${env.benchScriptsdir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: params.benchScriptGitBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${params.benchScriptGitUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                    // checkout scm with credentials to jmeter folder (by default)
+                    dir("${env.managementScriptsDir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: params.managementScriptsGitBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${params.managementScriptsGitUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                }
+            }
+        }
+        stage('Launch Jmeter bench') {
+            when {
+                expression { return params.initOnly == false }
+            }
+
+            steps("Execute the jmeter script ${env.JMETER_SCRIPT}") {
+                node("${params.jmeterAgent}") {
+                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/jmeter.sh")
+
+                    // Archive the build output artifacts.
+                    archiveArtifacts artifacts: "${JMETER_REPORT_DIR}/results/*"
+                }
+            }
+        }
+
+
+    }
+}
