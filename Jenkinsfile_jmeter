@@ -25,6 +25,7 @@ pipeline {
         JMETER_SCRIPT_DIR = "${benchScriptsDir}"
         JMETER_REPORT_DIR = "${env.reportsDir}"
         BENCHENV_Server = "${params.server}"
+        DEBUG = "${params.debug}"
     }
 
     agent none
@@ -99,7 +100,7 @@ pipeline {
 
             steps("Execute the jmeter script ${env.JMETER_SCRIPT}") {
                 node("${params.jmeterAgent}") {
-                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/jmeter.sh")
+                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/bin/jmeter.sh")
 
                     // Archive the build output artifacts.
                     archiveArtifacts artifacts: "${JMETER_REPORT_DIR}/results/*"
