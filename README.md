@@ -7,6 +7,7 @@ A portable bench lab
 [X] Stack
 [X] Templating
 [/] Basic cluster management
+[ ] LDAP
 [ ] Jenkins files for PLF managements
 [ ] Jmeter management
 [ ] Jenkins file for jmeter management
@@ -17,6 +18,10 @@ A portable bench lab
 [ ] Database sizing
 [ ] Add chat standalone mode
 [ ] Manage container resource allocations
+[ ] Save dataset
+[ ] Import dataset
+[ ] Generate Thread dump
+[ ] Generate Flame Graph
 
 ## Usage
 

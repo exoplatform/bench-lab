@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-INSTANCE_DIR=instance
+set +e
+INSTANCE_DIR=${INSTANCE_DIR:/opt/bench-lab/config}
+set +u
 
 TEMPLATE_DIR=${SCRIPT_DIR}/templates
 INSTANCE_DIR=${SCRIPT_DIR}/instance
