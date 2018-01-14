@@ -1,0 +1,364 @@
+pipeline {
+    parameters {
+        booleanParam(name: 'initOnly', defaultValue: false, description: 'Check to only refresh the job definition')
+        booleanParam(name: 'debug', defaultValue: false, description: 'Activate management script debug')
+        booleanParam(name: 'reportsOnly', defaultValue: false, description: 'Only generate reports')
+        // string(name: 'plfVersion', defaultValue:'5.0.x.RC0x', description: 'The platform label to test')
+        string(name: 'jmeterAgent', defaultValue: 'tqa-inj02', description: 'The agent tag to run the jmeter bench')
+        string(name: 'managementScriptsGitUrl', defaultValue: 'git@github.com:exoplatform/bench-lab.git', description: 'The management scripts')
+        string(name: 'managementScriptsGitBranch', defaultValue: 'ITOP-3476_dirty', description: 'The branch to checkout for the management scripts')
+        string(name: 'benchScriptGitUrl', defaultValue: 'git@github.com:exoplatform/qa-performance-testsuite.git', description: 'The git repository containing the jmeter scenario')
+        string(name: 'benchScriptGitBranch', defaultValue: 'master', description: 'The git branch to clone')
+        string(name: 'jmeterImage', defaultValue: 'exoplatform/jmeter', description: 'The image to execute')
+        string(name: 'jmeterImageVersion', defaultValue: '2.x_latest', description: 'The image version to execute')
+        string(name: 'jmeterHeap', defaultValue: '16g', description: 'The jmeter heap to define')
+        string(name: 'jmeterPermSize', defaultValue: '128m', description: 'The jmeter permSize to define')
+        string(name: 'platformServer', defaultValue: 'tqa-ap01.exoplatform.org', description: 'The plf server to bench')
+        string(name: 'platformServerPort', defaultValue: '80', description: 'The plf server port to bench')
+
+        choice(name: 'scenarioDirectory', description: 'The path where the jmeter scenario is stored', choices: """plf_4.0.x/intranet-express-v1
+plf_4.3.x/addons/chat
+plf_4.3.x/addons/task-management
+plf_4.3.x/social_rest_api
+plf_4.4.x/addons/social-rdbms
+plf_4.4.x/platform-enterprise""")
+
+        choice(name: 'scenarioFile', description:'The scenario to execute', choices:"""
+#--- GENERIC
+PERF_PLF_INTRANET_GENERIC.jmx
+#--- INTRANET
+PERF_PLF_INTRANET_CALENDAR_READ_HOME.jmx
+PERF_PLF_INTRANET_CALENDAR_READ_VIEWS.jmx
+PERF_PLF_INTRANET_DBINT2_Users_29450.csv
+PERF_PLF_INTRANET_ECMS_READ_FILE_EXPLORER_BROWSE.jmx
+PERF_PLF_INTRANET_ECMS_READ_PUBLIC.jmx
+PERF_PLF_INTRANET_FORUM_READ_TOPIC.jmx
+PERF_PLF_INTRANET_FORUM_WRITE_POST.jmx
+PERF_PLF_INTRANET_PORTAL_LOGIN.jmx
+PERF_PLF_INTRANET_SOCIAL_READ_HOME.jmx
+PERF_PLF_INTRANET_SOCIAL_READ_PROFILE.jmx
+PERF_PLF_INTRANET_SOCIAL_READ_SPACE_HOME.jmx
+PERF_PLF_INTRANET_UNIFIED_SEARCH_PAGE.jmx
+PERF_PLF_INTRANET_WIKI_READ_PAGE.jmx
+PERF_PLF_INTRANET_WIKI_WRITE_PAGE_NEW.jmx
+PERF_PLF_INTRANET_WIKI_WRITE_PAGE_UPDATE.jmx
+#---- ADDED FOR 4.4.x
+PERF_PLF_INTRANET_POST_ON_STREAM.jmx
+PERF_PLF_INTRANET_POST_ON_SPACE.jmx
+PERF_PLF_INTRANET_COMMENT_ON_ACTIVITY.jmx
+PERF_PLF_INTRANET_LIKE_ON_ACTIVITY.jmx
+PERF_PLF_INTRANET_CREATE_NEW_SPACE.jmx
+PERF_PLF_INTRANET_JOIN_SPACE.jmx
+PERF_PLF_INTRANET_SHARE_ACTIVITY.jmx
+PERF_PLF_INTRANE_MENTION_ON_STREAM.jmx
+PERF_PLF_INTRANET_SPACE_INVITATION.jmx
+PERF_PLF_INTRANET_MENTION_ON_SPACE.jmx
+PERF_PLF_INTRANET_SOCIAL_CHANGE_AVATAR.jmx
+PERF_PLF_INTRANET_SOCIAL_LOAD_MY_CONNECTIONS.jmx
+PERF_PLF_INTRANET_READ.jmx
+#---- CHAT
+PERF_PLF41_ENT_INTRANET_CHAT_READ_NOTIFICATION.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_SEARCH_PEOPLE_SYN100.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_SEARCH_TEAM.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_ADD_EVENT.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_ASSIGN_TASK.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_CHANGE_STATUS.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_CREATE_TEAM.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_EDIT_TEAM.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_GROUP_CHAT.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_MAKE_A_QUESTION.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_PRIVATE_CHAT.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_RAISE_HAND.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_SAVE_MEETING_AS_WIKI.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_SEND_MEETING_NOTE.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_SHARE_FILE.jmx
+PERF_PLF41_ENT_INTRANET_CHAT_WRITE_SHARE_LINK.jmx
+PERF_PLF41_ENT_INTRANET_JOIN_SPACE_FOR_CHAT.jmx
+#---- TASK
+PERF_PLF_ENT_INTRANET_CREATE_NEW_SPACE.jmx
+PERF_PLF_ENT_INTRANET_JOIN_SPACE_APPROVE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_INJECT_TASKS_SERVICE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_DEFAULT_PROJECTS_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_HOME_FIRST_ACCESS.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_INCOMING_TASKS.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_PROJECTS_GRB_PROJECT_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_PROJECT_BOARD_VIEW_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_READ_TASK_DETAILS_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_PROJECT_ADD_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_PROJECT_CLONE_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_PROJECT_DELETE_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_TASK_CREATE_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_TASK_DELETE_SPACE.jmx
+PERF_PLF_ENT_INTRANET_TASK_MANAGEMENT_WRITE_TASK_EDIT_SPACE.jmx
+#---- SOCIAL REST API
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_DELETE_ACTIVITY_COMMENT.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_DELETE_IDENTITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_DELETE_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_DELETE_USER_ACTIVITIES.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_DELETE_USER_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_ACTIVITY_COMMENTS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_ACTIVITY_LIKES.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_ALL_ACTIVITY_LIKES.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_ALL_USERS_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_AN_ACTIVITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_AN_IDENTITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_All_IDENTITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_All_IDENTITY_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_All_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_SPACE_ACTIVIES.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_USERS_RELATIONSHIPS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_READ_USER_ACTIVITIES.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_UPDATE_ACTIVITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_UPDATE_ACTIVITY_COMMENTS.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_UPDATE_IDENTITY.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_USER_LIKE_ACTIVITY_DELETE.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_ACTIVITY_COMMENT_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_ACTIVITY_LIKE_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_ACTIVITY_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_IDENTITY_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_RELATIONSHIP_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_RELATIONSHIP_UPDATE.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_SPACE_ACTIVITY_NEW.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_USERS_RELATIONSHIP_UPDATE.jmx
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_USER_RELATIONSHIP_NEW.jmx""")
+
+        choice(name: 'userDatasetName', description: 'The set of users to use', choices: """
+#--- GENERIC
+GenericDatasetName.csv
+#--- INTRANET
+PERF_PLF_INTRANET_DBINT2_Users_29450.csv
+#---- CHAT
+AssignTaskDatasetName.csv
+ChatDatasetName.csv
+ChatGroupDatasetName.csv
+ChatPrivateDatasetName.csv
+EditTeamDatasetName.csv
+JoinSpaceDatasetName.csv
+MeetingNoteDatasetName.csv
+ShareFileGroupDatasetName.csv
+ShareLinkGroupDatasetName.csv
+#---- TASK
+TaskManagement_InjectTasks.csv
+TaskManagement_Inject_Spaces.csv
+TaskManagement_Join_Spaces.csv
+TaskManagement_ProjectAdd_Space.csv
+TaskManagement_ProjectClone_Space.csv
+TaskManagement_ProjectDelete_Space.csv
+TaskManagement_Read_TaskDetails_Space.csv
+TaskManagement_Space.csv
+TaskManagement_TaskCreate_Space.csv
+TaskManagement_TaskDelete_Space.csv
+TaskManagement_TaskEdit_Space.csv
+#---- SOCIAL REST API
+ActivityDatasetName.csv
+CommentDatasetName.csv
+IdentityDatasetName.csv
+RelationShipDatasetName.csv
+SpaceDatasetName.csv
+UserDatasetName.csv
+#---4.4.x
+COMMENT_ACTIVITIES.csv
+CREATE_NEW_SPACE.csv
+JOIN_SPACE.csv
+MENTION_ON_STREAM.csv
+POST_ON_SPACE.csv
+POST_ON_STREAM.csv
+POST_URL_ON_STREAM.csv
+PROFILE_AVATAR.csv
+LOAD_CONNECTIONS.csv
+ReadDatasetName.csv""")
+
+        choice(name: 'spaceDatasetName', description: 'The set of spaces to use', choices: """
+#--- INTRANET
+PERF_PLF_INTRANET_DBINT2_USER_SPACE_SpaceLinks.csv""")
+        choice(name: 'topicDatasetName', description: 'The set of spaces to user', choices: """
+#--- INTRANET
+PERF_PLF_INTRANET_DBINT2_FORUM_TopicsLinks_1000.csv""")
+        choice(name: 'wikiDatasetName', description: 'The set of wiki pages to use', choices: """
+#--- INTRANET
+PERF_PLF_INTRANET_DBINT2_WIKI_PAGE_WikiLinks_1000.csv
+""")
+        choice(name: 'documentDatasetName', description: 'The set of documents to use', choices: """
+#--- INTRANET
+PERF_PLF_INTRANET_DBINT2_ECMS_FILE_EXPLORER_DIRECTORIES.csv
+""")
+        choice(name: 'unifiedSearchDataset', description: 'The set of searchable terms to use', choices: """
+#--- INTRANET
+PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
+""")
+        string(name: 'unifiedSearchFeature', defaultValue: '', description: 'Comma (,) selected list of unified search features to activate. Default is empty = everything is activated. Possible entries are : file,document,wiki,page,post,people,space,event,task,answer')
+
+        string(name: 'warmupDuration', defaultValue: '300', description: '-JexpDuration use this value if TYPE_WARMUP is true The value is in seconds')
+        string(name: 'warmupThreadCount', defaultValue: '10', description: 'set the -JexpThreadCount param for the WARMUP job launch')
+        string(name: 'warmupVUGThreadCount', defaultValue: '10', description: '-JexpVUGMaxThreadDuration')
+        string(name: 'threadCount', defaultValue:'0', description: '-JexpThreadCount')
+        string(name: 'loopCount', defaultValue:'10000000', description: '-JexpLoopCount')
+        string(name: 'responseTimeout', defaultValue:'75000', description: '-JexpPageResponseTimeout')
+        string(name: 'VUGMaxThread', defaultValue: '10000', description: '-JexpVUGMaxThread for tests execution')
+        string(name: 'VUGUpStep', defaultValue: '100', description: '-JexpVUGUpStep')
+        string(name: 'thinkTime', defaultValue: '20000', description: '-JexpThinkTime')
+
+        string(name: 'scenarioBaseDir', defaultValue:'performance/src/test/jmeter/', description:'base dir of the scenario on the repository')
+    }
+
+    environment {
+        gitCredentialId = 'ciagent'
+        benchScriptsDir = 'bench_scripts'
+        managementScriptsDir = 'management'
+        reportsDir = "."
+        JMETER_IMAGE = "${params.jmeterImage}"
+        JMETER_IMAGE_VERSION = "${params.jmeterImageVersion}"
+        JMETER_SCRIPT = "${params.scenarioBaseDir}/${params.scenarioDirectory}/${params.scenarioFile}"
+        JMETER_SCRIPT_DIR = "${benchScriptsDir}"
+        JMETER_REPORT_DIR = "${env.reportsDir}"
+        JMETER_HEAP = "${params.jmeterHeap}"
+        JMETER_PERM_SIZE = "${params.jmeterPermSize}"
+        BENCHENV_expHost = "${params.platformServer}"
+        BENCHENV_expPort = "${params.platformServerPort}"
+        BENCHENV_expLoopCount = "${params.loopCount}"
+        BENCHENV_expPageResponseTimeout = "${params.responseTimeout}"
+        BENCHENV_expUserDatasetName = "${params.userDatasetName}"
+        BENCHENV_expSpaceDatasetName = "${params.spaceDatasetName}"
+        BENCHENV_expTopicDatasetName = "${params.topicDatasetName}"
+        BENCHENV_expWikiDatasetName = "${params.wikiDatasetName}"
+        BENCHENV_expDocumentDatasetName = "${params.documentDatasetName}"
+        BENCHENV_expSearchDatasetName = "${params.unifiedSearchDataset}"
+        BENCHENV_expSearchType = "${params.unifiedSearchFeature}"
+        BENCHENV_expVUGMaxThread = "${params.VUGMaxThread}"
+        BENCHENV_expVUGUpStep = "${params.VUGUpStep}"
+        BENCHENV_expThinkTime = "${params.thinkTime}"
+        BENCHENV_expRampup = "10"
+        BENCHENV_expVUGDownDuration = "15"
+        BENCHENV_expVUGDownStep = "100"
+        BENCHENV_expVUGUpDuration = "180"
+        BENCHENV_expVUGUpRampup = "30"
+        BENCHENV_expVUGWaitTime = "15"
+        BENCHENV_expGroupingRequestsByUsersLevel = "true"
+
+        DEBUG = "${params.debug}"
+    }
+
+    agent none
+
+    stages {
+        stage('Info') {
+            when {
+                expression { return params.initOnly == false }
+            }
+            steps {
+                node("${params.jmeterAgent}") {
+                    echo "Init only : ${params.initOnly}"
+                    echo "Report only : ${params.reportsOnly}"
+                    echo "Jmeter will be launched on the node ${params.jmeterAgent}"
+                    echo "Git repository : ${params.benchScriptGitUrl}"
+                    echo "Jmeter script : ${env.JMETER_SCRIPT}"
+                    echo "Jmeter result directory : ${WORKSPACE}/${JMETER_REPORT_DIR}"
+                }
+            }
+        }
+
+        stage('Clean workspace') {
+            when {
+                expression { return params.initOnly == false && params.reportsOnly == false }
+            }
+            steps {
+                node("${params.jmeterAgent}") {
+                    dir("${env.benchScriptsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+                    dir("${env.managementScriptsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+                    dir("${env.reportsDir}") {
+                        step([$class: 'WsCleanup'])
+                    }
+
+                }
+            }
+         }
+        stage('Prepare jmeter workspace') {
+            when {
+                expression { return params.initOnly == false }
+            }
+
+            steps("Prepare the jmeter environment") {
+                node("${params.jmeterAgent}") {
+                    // checkout scm with credentials to jmeter folder (by default)
+                    dir("${env.benchScriptsdir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: params.benchScriptGitBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${params.benchScriptGitUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                    // checkout scm with credentials to jmeter folder (by default)
+                    dir("${env.managementScriptsDir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: params.managementScriptsGitBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${params.managementScriptsGitUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                }
+            }
+        }
+
+        stage('Warmup....') {
+            when {
+                expression { return params.initOnly == false && params.reportsOnly == false }
+            }
+            environment {
+                BENCHENV_expDuration="${params.warmupDuration}"
+                BENCHENV_expThreadCount="${params.warmupThreadCount}"
+            }
+            steps("warmup") {
+                node("${params.jmeterAgent}") {
+                    echo "Execute the jmeter script in warmup mode ${env.JMETER_SCRIPT}"
+                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/bin/jmeter.sh")
+
+                }
+            }
+        }
+        stage('Bench....') {
+            when {
+                expression { return params.initOnly == false && params.reportsOnly == false }
+            }
+
+            environment {
+                BENCHENV_expThreadCount="${params.threadCount}"
+            }
+
+            steps("Execute the jmeter script ${env.JMETER_SCRIPT}") {
+                node("${params.jmeterAgent}") {
+                    echo "Execute the jmeter script mode ${env.JMETER_SCRIPT}"
+                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/bin/jmeter.sh")
+                }
+            }
+        }
+
+        stage('Generating reports...') {
+            when {
+                expression { return params.initOnly == false }
+            }
+            steps("Generate reports .....") {
+                node("${params.jmeterAgent}") {
+                    sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/bin/jmeter-reports.sh")
+
+                    // Always recreate the zip file
+                    sh("rm -fv benchmark-output.zip")
+                    zip archive: true, dir: '', glob: 'results/**/*', zipFile: 'benchmark-output.zip'
+
+                }
+            }
+
+        }
+        
+   }
+}

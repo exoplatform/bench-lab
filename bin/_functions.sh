@@ -3,7 +3,7 @@
 UTILS_DIR=${SCRIPT_DIR}/utils
 
 COMPOSE_CMD=docker-compose
-DOCKER_CMD=docker
+DOCKER_CMD=${DOCKER_CMD:-docker}
 
 ENVIRONMENT=${ENVIRONMENT:-dev}
 
