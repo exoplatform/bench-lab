@@ -225,10 +225,9 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         BENCHENV_expDocumentDatasetName = "${params.documentDatasetName}"
         BENCHENV_expSearchDatasetName = "${params.unifiedSearchDataset}"
         BENCHENV_expSearchType = "${params.unifiedSearchFeature}"
-        BENCHENV_expVUGMaxThread = "${params.VUGMaxThread}"
-        BENCHENV_expVUGUpStep = "${params.VUGUpStep}"
         BENCHENV_expThinkTime = "${params.thinkTime}"
         BENCHENV_expRampup = "10"
+        BENCHENV_expVUGUpStep = "${params.VUGUpStep}"
         BENCHENV_expVUGDownDuration = "15"
         BENCHENV_expVUGDownStep = "100"
         BENCHENV_expVUGUpDuration = "180"
@@ -317,6 +316,7 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
             environment {
                 BENCHENV_expDuration="${params.warmupDuration}"
                 BENCHENV_expThreadCount="${params.warmupThreadCount}"
+                BENCHENV_expVUGMaxThread = "${params.warmupVUGMaxThread}"
             }
             steps("warmup") {
                 node("${params.jmeterAgent}") {
@@ -333,6 +333,7 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
 
             environment {
                 BENCHENV_expThreadCount="${params.threadCount}"
+                BENCHENV_expVUGMaxThread = "${params.VUGMaxThread}"
             }
 
             steps("Execute the jmeter script ${env.JMETER_SCRIPT}") {
