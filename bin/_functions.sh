@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eux
 
 UTILS_DIR=${SCRIPT_DIR}/utils
 
@@ -6,6 +7,22 @@ COMPOSE_CMD=docker-compose
 DOCKER_CMD=docker
 
 ENVIRONMENT=${ENVIRONMENT:-dev}
+
+set +e
+INSTANCE_DIR=${INSTANCE_DIR:/opt/bench-lab/config}
+set +u
+
+CONF_DIR=${SCRIPT_DIR}/config
+
+TEMPLATE_DIR=${BASE_DIR}/templates
+INSTANCE_DIR=${SCRIPT_DIR}/instance
+
+# Global environment file
+ENV_FILE=${INSTANCE_DIR}/instance.env
+# Specific environement file
+SPEC_ENV_FILE=${INSTANCE_DIR}/spec.env
+
+DOCKER_TEMPLATE_CMD="docker run --rm -v ${TEMPLATE_DIR}:/templates -v ${INSTANCE_DIR}:/target -v ${UTILS_DIR}:/go --env-file ${ENV_FILE} --env-file ${SPEC_ENV_FILE} golang:1.9.1 go run template.go"
 
 #####
 # Add $1=value in the $3 file (default:${ENV_FILE}
