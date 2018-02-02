@@ -1,0 +1,20 @@
+version: '3.0'
+
+networks:
+  db:
+
+services:
+  db:
+    image: mysql:5.5
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpwd
+      MYSQL_DATABASE: plf
+      MYSQL_USER: plf
+      MYSQL_PASSWORD: plf
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - /opt/bench/config/mysql/my.cnf:/etc/mysql/conf.d/bench.cnf
+      - /srv/bench/db/mysql:/var/lib/mysql
+    networks:
+      - db

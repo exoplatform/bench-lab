@@ -1,0 +1,14 @@
+version: '3.0'
+
+networks:
+  mongo:
+
+services:
+  mongo:
+    image: mongo:3.4
+    volumes:
+      - /srv/bench/mongo:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
+    networks:
+      - mongo

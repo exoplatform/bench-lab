@@ -1,0 +1,17 @@
+version: '3.0'
+
+networks:
+  ldap:
+
+services:
+  ldap:
+    image: exoplatform/openldap:2.4.44
+    environment:
+      - SLAPD_DOMAIN=example.com
+      - SLAPD_PASSWORD=exo
+    volumes:
+      - /srv/DS/DB-INT2/DATASET-PLF-5.0.0-Intranet_LOT2-V03/ldap:/etc/ldap.dist/prepopulate
+      - /srv/bench/ldap/data:/var/lib/ldap
+      - /srv/bench/ldap/conf:/etc/ldap
+    networks:
+      ldap:
