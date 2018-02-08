@@ -45,6 +45,9 @@ echo "Using local UID : ${LOCAL_USER_ID}"
 
 echo Running script with additional parameters : ${PARAMETER_STRING}
 
+echo "Ensure the jmeter image is up to date"
+${DOCKER_CMD} pull ${JMETER_IMAGE}:${JMETER_IMAGE_VERSION}
+
 echo ###################################################################################################################
 echo Beginning of the test : $(date)
 echo ###################################################################################################################
