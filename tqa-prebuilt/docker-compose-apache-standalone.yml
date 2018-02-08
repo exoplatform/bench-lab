@@ -1,0 +1,22 @@
+version: '3.0'
+
+networks:
+  front:
+
+services:
+  front:
+    image: exoplatform/apache:2.4.18
+    ports:
+      - "80:80"
+    volumes:
+      - /srv/DS/DB-INT2/DATASET-PLF-5.0.0-Intranet_LOT2-V03/apache/apache2.conf:/etc/apache2/apache2.conf
+      - /srv/DS/DB-INT2/DATASET-PLF-5.0.0-Intranet_LOT2-V03/apache/conf.d:/etc/apache2/conf.d
+      - /srv/DS/DB-INT2/DATASET-PLF-5.0.0-Intranet_LOT2-V03/apache/includes:/etc/apache2/includes
+      - /srv/DS/DB-INT2/DATASET-PLF-5.0.0-Intranet_LOT2-V03/apache/sites-available:/etc/apache2/sites-enabled
+      - /srv/www/default:/var/www/default
+      - /srv/bench/logs/apache2:/var/log/apache2
+    networks:
+      search:
+      front:
+        aliases: 
+          - tqa-ap01.exoplatform.org
