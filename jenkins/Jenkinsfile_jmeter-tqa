@@ -239,6 +239,13 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         BENCHENV_expVUGWaitTime = "15"
         BENCHENV_expGroupingRequestsByUsersLevel = "true"
 
+        // Influx DB
+        BENCHENV_INFLUXDB_URL="http://pro17.exoplatform.org:8086/write?db=jmeter"
+        BENCHENV_INFLUXDB_APPLICATION="tqa-ovh"
+        BENCHENV_INFLUXDB_MEASUREMENT="jmeter"
+        BENCHENV_INFLUXDB_SUMMARY_ONLY="false"
+        BENCHENV_INFLUXDB_TEST_TITLE="${params.scenarioFile}"
+
         DEBUG = "${params.debug}"
     }
 
@@ -337,7 +344,6 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
                 node("${params.jmeterAgent}") {
                     echo "Execute the jmeter script in warmup mode ${env.JMETER_SCRIPT}"
                     sh("JMETER_REPORT_DIR=${WORKSPACE}/${JMETER_REPORT_DIR} JMETER_SCRIPT_DIR=${WORKSPACE}/${JMETER_SCRIPT_DIR} ${managementScriptsDir}/bin/jmeter.sh")
-
                 }
             }
         }
