@@ -41,6 +41,8 @@ JMETER_PERM_SIZE=${JMETER_PERM_SIZE:-128m}
 JMETER_SCRIPT_DIR=${JMETER_SCRIPT_DIR:-$(pwd)}
 JMETER_REPORT_DIR=${JMETER_REPORT_DIR:-$(pwd)}/results
 
+JTL_FILE="/output/benchmark.jtl"
+
 echo Checking report directory ${JMETER_REPORT_DIR}
 if [ ! -d "${JMETER_REPORT_DIR}" ]; then
   echo "ERROR report dir ${JMETER_REPORT_DIR} does not exist"
@@ -50,11 +52,24 @@ fi
 LOCAL_USER_ID=$(id -u)
 echo "Using local UID : ${LOCAL_USER_ID}"
 
-JTL_FILE="/output/benchmark.jtl"
+echo Generate bench statistics
+
+# Temporary allow everybody to write on the report dir 
+# to solve user mapping issue
+chmod 777 ${JMETER_REPORT_DIR}
+${DOCKER_CMD} run --rm \
+-v ${SCRIPT_DIR}/../../tqa-scripts/JTLAnalyzer:/src \
+-v ${JMETER_REPORT_DIR}:/output \
+groovy:2.4.13-jdk8 groovy \
+/src/src/PerfStats.groovy -f ${JTL_FILE} --step ${BENCHENV_expVUGUpStep}
+# Restore permissions
+chmod 770 ${JMETER_REPORT_DIR}
+
+echo Generating CSV ...
+
 COMMON_OPTIONS="--granulation 10000"
 CSV_OPTIONS="${COMMON_OPTIONS}"
 
-echo Generating CSV
 ## CSV
 ### Agregated
 generateReports --generate-csv /output/csv/benchmark-AggregateReport_Aggregated.csv \

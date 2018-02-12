@@ -7,6 +7,8 @@ pipeline {
         string(name: 'jmeterAgent', defaultValue: 'tqa-inj02', description: 'The agent tag to run the jmeter bench')
         string(name: 'managementScriptsGitUrl', defaultValue: 'git@github.com:exoplatform/bench-lab.git', description: 'The management scripts')
         string(name: 'managementScriptsGitBranch', defaultValue: 'ITOP-3476_dirty', description: 'The branch to checkout for the management scripts')
+        string(name: 'tqaScriptsGitUrl', defaultValue: 'git@github.com:exoplatform/benchmark-scripts.git', description: 'The old tqa scripts')
+        string(name: 'tqaScriptsGitBranch', defaultValue: 'production', description: 'The branch to checkout for the management scripts')
         string(name: 'benchScriptGitUrl', defaultValue: 'git@github.com:exoplatform/qa-performance-testsuite.git', description: 'The git repository containing the jmeter scenario')
         string(name: 'benchScriptGitBranch', defaultValue: 'master', description: 'The git branch to clone')
         string(name: 'jmeterImage', defaultValue: 'exoplatform/jmeter', description: 'The image to execute')
@@ -207,6 +209,7 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         gitCredentialId = 'ciagent'
         benchScriptsDir = 'bench_scripts'
         managementScriptsDir = 'management'
+        tqaScriptsDir = 'tqa-scripts'
         reportsDir = "."
         JMETER_IMAGE = "${params.jmeterImage}"
         JMETER_IMAGE_VERSION = "${params.jmeterImageVersion}"
@@ -303,6 +306,17 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
                                 userRemoteConfigs: [[
                                     credentialsId: "${env.gitCredentialId}",
                                     url: "${params.managementScriptsGitUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                    // checkout scm with credentials to tqa-scripts folder (by default)
+                    dir("${env.tqaScriptsDir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: params.tqaScriptsGitBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${params.tqaScriptsGitUrl}",
                                     refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
                                 ]]])
                     }
