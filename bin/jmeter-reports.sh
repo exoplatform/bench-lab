@@ -52,21 +52,6 @@ fi
 LOCAL_USER_ID=$(id -u)
 echo "Using local UID : ${LOCAL_USER_ID}"
 
-echo Generate bench statistics
-
-# Temporary allow everybody to write on the report dir 
-# to solve user mapping issue
-chmod 777 ${JMETER_REPORT_DIR}
-${DOCKER_CMD} run --rm \
--v ${SCRIPT_DIR}/../../tqa-scripts/JTLAnalyzer:/src \
--v ${JMETER_REPORT_DIR}:/output \
-groovy:2.4.13-jdk8 groovy \
-/src/src/PerfStats.groovy -f ${JTL_FILE} --step ${BENCHENV_expVUGUpStep}
-# Restore permissions
-chmod 770 ${JMETER_REPORT_DIR}
-
-echo Generating CSV ...
-
 COMMON_OPTIONS="--granulation 10000"
 CSV_OPTIONS="${COMMON_OPTIONS}"
 
@@ -153,6 +138,21 @@ generateReports --generate-png /output/png/benchmark-ResponseTimesVsThreads_Deta
 generateReports --generate-png /output/png/benchmark-ThroughputVsThreads_Details.png \
                 --plugin-type ThroughputVsThreads \
                 ${CSV_OPTIONS} --aggregate-rows no
+
+echo Generate bench statistics
+
+# Temporary allow everybody to write on the report dir 
+# to solve user mapping issue
+chmod 777 ${JMETER_REPORT_DIR}
+${DOCKER_CMD} run --rm \
+-v ${SCRIPT_DIR}/../../tqa-scripts/JTLAnalyzer:/src \
+-v ${JMETER_REPORT_DIR}:/output \
+groovy:2.4.13-jdk8 groovy \
+/src/src/PerfStats.groovy -f ${JTL_FILE} --step ${BENCHENV_expVUGUpStep}
+# Restore permissions
+chmod 770 ${JMETER_REPORT_DIR}
+
+echo Generating CSV ...
 
 echo ###################################################################################################################
 echo "End of the test : $(date)"
