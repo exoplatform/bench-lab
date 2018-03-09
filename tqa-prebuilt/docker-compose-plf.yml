@@ -13,8 +13,8 @@ services:
   plf:
     image: exoplatform/exo:5.0_latest
     environment:
-      EXO_FILE_STORAGE_DIR: /srv/exo/shared/files
-      EXO_JCR_STORAGE_DIR: /srv/exo/shared/jcrvalues
+      EXO_JVM_SIZE_MIN: 8g
+      EXO_JVM_SIZE_MAX: 8g
     volumes:
       - /srv/bench/plf:/opt/exo
       - /srv/bench/data/files:/srv/exo/files
