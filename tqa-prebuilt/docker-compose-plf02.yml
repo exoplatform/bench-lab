@@ -10,41 +10,39 @@ networks:
         - subnet: 172.16.251.0/24
 
 services:
-  plf:
+  plf02:
     image: exoplatform/exo:5.1_latest
     environment:
-      EXO_JVM_SIZE_MIN: 8g
-      EXO_JVM_SIZE_MAX: 8g
+      EXO_FILE_STORAGE_DIR: /srv/exo/shared/files
+      EXO_JCR_STORAGE_DIR: /srv/exo/shared/jcrvalues
     volumes:
-      # - /srv/bench/plf:/opt/exo
+      - /srv/bench/plf02:/opt/exo
       - /srv/bench/data/files:/srv/exo/files
       - /srv/bench/data/jcr/values:/srv/exo/jcr/values
-      - /srv/bench/data/jcr/index:/srv/exo/jcr/index
+      - /srv/bench/indexes/index02:/srv/exo/jcr/index
     entrypoint: /opt/exo/start_eXo.sh
     expose:
       - 8080
       - 8084
     networks:
       plf:
-        ipv4_address: "172.16.251.11"
+        ipv4_address: "172.16.251.12"
       search:
       ldap:
       mongo:
       db:
       front:
-        aliases: 
-          - plf01 
-  plf_jmxtrans:
-    image: exoplatform/jmxtrans:268_0
+  plf02_jmxtrans:
+    image: exoplatform/jmxtrans:268_1
     environment:
-      TARGET_JMX_HOST: plf
+      TARGET_JMX_HOST: plf02
       TARGET_HOSTNAME: qaf05
       TARGET_JMX_PORT: 8004
       TARGET_INFLUXDB_DATABASE: exo
       TARGET_INFLUXDB_URL: http://pro17.exoplatform.org:8086
-      TARGET_NODE_ID: plf01
+      TARGET_NODE_ID: plf02
       JMXTRANS_LOG_LEVEL: warn 
     networks: 
       plf:
     depends_on:
-      - plf
+      - plf02

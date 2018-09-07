@@ -11,7 +11,7 @@ networks:
 
 services:
   plf01:
-    image: exoplatform/exo:5.0_latest
+    image: exoplatform/exo:5.1_latest
     environment:
       EXO_FILE_STORAGE_DIR: /srv/exo/shared/files
       EXO_JCR_STORAGE_DIR: /srv/exo/shared/jcrvalues
