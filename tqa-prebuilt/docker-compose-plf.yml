@@ -16,7 +16,7 @@ services:
       EXO_JVM_SIZE_MIN: 8g
       EXO_JVM_SIZE_MAX: 8g
     volumes:
-      # - /srv/bench/plf:/opt/exo
+      - /srv/bench/plf:/opt/exo
       - /srv/bench/data/files:/srv/exo/files
       - /srv/bench/data/jcr/values:/srv/exo/jcr/values
       - /srv/bench/data/jcr/index:/srv/exo/jcr/index
