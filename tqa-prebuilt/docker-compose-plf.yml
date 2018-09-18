@@ -12,18 +12,37 @@ networks:
 services:
   plf:
     image: exoplatform/exo:5.1_latest
-    environment:
-      EXO_JVM_SIZE_MIN: 8g
-      EXO_JVM_SIZE_MAX: 8g
     volumes:
-      - /srv/bench/plf:/opt/exo
+      # - /srv/bench/plf:/opt/exo
+      - /opt/bench/config/exo/portal:/opt/exo/gatein/conf/portal
       - /srv/bench/data/files:/srv/exo/files
       - /srv/bench/data/jcr/values:/srv/exo/jcr/values
       - /srv/bench/data/jcr/index:/srv/exo/jcr/index
     entrypoint: /opt/exo/start_eXo.sh
+    environment:
+      EXO_ADDONS_LIST: exo-chat
+      EXO_JVM_SIZE_MAX: 16g
+      EXO_JVM_SIZE_MIN: 16g
+      EXO_DB_HOST: db
+      EXO_DB_USER: plf
+      EXO_DB_PASSWORD: "plf"
+      EXO_DB_NAME: PLF_35X_INTLOT2_JCR
+      EXO_DB_POOL_IDM_INIT_SIZE: 10
+      EXO_DB_POOL_IDM_MAX_SIZE: 200
+      EXO_DB_POOL_JCR_INIT_SIZE: 10
+      EXO_DB_POOL_JCR_MAX_SIZE: 2000
+      EXO_DB_POOL_JPA_INIT_SIZE: 10
+      EXO_DB_POOL_JPA_MAX_SIZE: 2000
+      EXO_ES_EMBEDDED: "false"
+      EXO_ES_HOST: "search"
+      EXO_REGISTRATION: "false"
+      EXO_JMX_RMI_SERVER_HOSTNAME: plf
     expose:
       - 8080
       - 8084
+    ports:
+      - "127.0.0.1:10001:10001"
+      - "127.0.0.1:10002:10002"
     networks:
       plf:
         ipv4_address: "172.16.251.11"
@@ -39,7 +58,7 @@ services:
     environment:
       TARGET_JMX_HOST: plf
       TARGET_HOSTNAME: qaf05
-      TARGET_JMX_PORT: 8004
+      TARGET_JMX_PORT: 10001
       TARGET_INFLUXDB_DATABASE: exo
       TARGET_INFLUXDB_URL: http://pro17.exoplatform.org:8086
       TARGET_NODE_ID: plf01
