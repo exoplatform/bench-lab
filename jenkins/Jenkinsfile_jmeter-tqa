@@ -238,6 +238,8 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         BENCHENV_expVUGUpRampup = "30"
         BENCHENV_expVUGWaitTime = "15"
         BENCHENV_expGroupingRequestsByUsersLevel = "true"
+        BENCHENV_expCsvDatasetFolder = "/jmeter/${params.scenarioBaseDir}/${params.scenarioDirectory}/csv"
+        
 
         // Influx DB
         BENCHENV_INFLUXDB_URL="http://pro17.exoplatform.org:8086/write?db=jmeter"
