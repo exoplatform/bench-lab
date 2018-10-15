@@ -20,7 +20,9 @@ services:
       - /srv/bench/data/jcr/index:/srv/exo/jcr/index
     entrypoint: /opt/exo/start_eXo.sh
     environment:
-      EXO_ADDONS_LIST: exo-chat
+      EXO_PROXY_VHOST: tqa-ap01.exoplatform.org
+      EXO_PROXY_SSL: "false"
+      EXO_ADDONS_LIST: exo-chat:2.1.0-RC12
       EXO_JVM_SIZE_MAX: 16g
       EXO_JVM_SIZE_MIN: 16g
       EXO_DB_HOST: db
