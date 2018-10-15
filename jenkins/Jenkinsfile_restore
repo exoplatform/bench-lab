@@ -1,0 +1,72 @@
+pipeline {
+    parameters {
+        string(name: 'dataset', defaultValue: '/srv/DS/DB-INT2/<dataset>', description: 'The dataset to restore')
+    }
+    environment {
+        gitCredentialId = 'ciagent'
+        tqaASAgent = 'tqa-as-01'
+        scmUrl = 'git@github.com:exoplatform/bench-lab'
+        scmBranch = 'ITOP-3476_dirty'
+        scriptDir = 'bench-lab'
+        DS = "${params.dataset}"
+    }
+    agent none
+
+    stages {
+        stage('Prepare jmeter workspace') {
+            steps("Prepare the bench-lab environment") {
+                node (env.tqaASAgent) {
+                    // checkout scm with credentials to jmeter folder (by default)
+                    dir("${env.scriptDir}") {
+                        checkout([
+                                $class: 'GitSCM',
+                                branches: [[name: env.scmBranch]],
+                                userRemoteConfigs: [[
+                                    credentialsId: "${env.gitCredentialId}",
+                                    url: "${env.scmUrl}",
+                                    refspec: "+refs/heads/*:refs/remotes/origin/* +refs/pull/*:refs/remotes/origin/pull/*"
+                                ]]])
+                    }
+                }
+            }
+        }
+        stage('Restore') {
+            failFast true
+            parallel {
+                stage('MongoDB') {
+                    steps {
+                        node("${env.tqaASAgent}") {
+                            // TODO sudo
+                            sh "${env.scriptDir}/bin/dataset/restore-mongo.sh" 
+                        }
+                    }
+                }
+                stage('Elasticsearch') {
+                    steps {
+                        node("${env.tqaASAgent}") {
+                            // TODO sudo
+                            sh "${env.scriptDir}/bin/dataset/restore-elasticsearch.sh" 
+                        }
+                    }
+                }
+                stage('Mysql') {
+                    steps {
+                        node("${env.tqaASAgent}") {
+                            // TODO sudo
+                            sh "${env.scriptDir}/bin/dataset/restore-mysql-singledatabase.sh" 
+                        }
+                    }
+                }
+                stage('Values') {
+                    steps {
+                        node("${env.tqaASAgent}") {
+                            // TODO sudo
+                            sh "${env.scriptDir}/bin/dataset/restore-values.sh" 
+                        }
+                    }
+                }
+                // TODO Index for clustered environment
+            }
+        }
+    }
+}
