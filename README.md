@@ -1,5 +1,19 @@
 # bench-lab quick and dirty commands 
 
+- [bench-lab quick and dirty commands](#bench-lab-quick-and-dirty-commands)
+  - [Prepare mysql dataset](#prepare-mysql-dataset)
+    - [Prepare partitions](#prepare-partitions)
+    - [Restore dataset](#restore-dataset)
+    - [Database preparation](#database-preparation)
+    - [Backup](#backup)
+  - [Restore an already prepared mysql dataset](#restore-an-already-prepared-mysql-dataset)
+  - [Restore the indexes, values and files (for standalone)](#restore-the-indexes-values-and-files-for-standalone)
+  - [Restore the indexes (for cluster)](#restore-the-indexes-for-cluster)
+  - [Restore elasticsearch content](#restore-elasticsearch-content)
+  - [Restore mongodb](#restore-mongodb)
+  - [Create the docker-compose file for standalone execution](#create-the-docker-compose-file-for-standalone-execution)
+  - [Create the docker-compose file for cluster execution](#create-the-docker-compose-file-for-cluster-execution)
+
 ## Prepare mysql dataset
 
 INFO: This has to be done only one time when a new dump is retrieved from the TN TQA
@@ -32,10 +46,10 @@ chown -R 999:999 /srv/bench/db/mysql
 mv /srv/bench/db/mysql/5.1/data/* /srv/bench/db/mysql
 rm -rf /srv/bench/db/mysql/5.1
 
-# In one terminal
+$ # In one terminal
 docker run -ti --rm --name db -v /opt/bench/config/mysql/my.cnf:/etc/mysql/conf.d/bench.cnf -v /opt/bench/config/mysql/admin-mode.cnf:/etc/mysql/conf.d/zz-admin-mode.cnf -v /srv/bench/db/mysql:/var/lib/mysql -p 127.0.0.1:3306:3306 --net plf mysql:5.5
 
-# In a second terminal
+$ # In a second terminal
 docker exec -ti db bash
 
 mysql -uroot -p<tn root password>
@@ -51,14 +65,14 @@ With the container still running
 ```
 
 docker exec -ti db bash
-# dump 
+$ # dump 
 mysqldump -uroot -p<tn root password> PLF_35X_INTLOT2_IDM > /tmp/idm.sql
-# restore
+$ # restore
 cat /tmp/idm.sql | mysql -uroot -p<tn root password> PLF_35X_INTLOT2_JCR
 
-# Optimize
+$ # Optimize
 time mysqlcheck -uroot -p<tn root password> -A -o -v
-# around 1h10
+$ # Duration around 1h10
 ```
 
 ### Backup
@@ -67,6 +81,7 @@ time mysqlcheck -uroot -p<tn root password> -A -o -v
 docker exec -ti db mysqladmin -u root -p<tn root password> shutdown
 cd /srv/bench/db/
 time tar -c -C /srv/bench/db mysql | pv --size $(du -sh /srv/bench/db/mysql |awk '{print $1}') > $DS/mysql-data/mysql-onedatabase.tar
+$ # Duration ~10mn
 ```
 
 ## Restore an already prepared mysql dataset
