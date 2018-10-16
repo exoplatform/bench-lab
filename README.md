@@ -2,13 +2,15 @@
 
 ## Prepare mysql dataset
 
+INFO: This has to be done only one time when a new dump is retrieved from the TN TQA
+
 Actions :
 * Restore TN dataset
 * Move IDM database on the JCR database
 * Execute optimize
 * Create one database archive
 
-Estimated duration : 45mn
+Estimated duration : 1h30mn
 
 ### Prepare partitions
 
@@ -57,7 +59,6 @@ cat /tmp/idm.sql | mysql -uroot -p<tn root password> PLF_35X_INTLOT2_JCR
 # Optimize
 time mysqlcheck -uroot -p<tn root password> -A -o -v
 # around 1h10
-
 ```
 
 ### Backup
