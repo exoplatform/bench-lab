@@ -1,5 +1,6 @@
 #!/bin/bash -eu
-
+env
+pwd
 set +u
 if [ -z "${DS}" ]; then
   echo "DS environment variable must exist"
