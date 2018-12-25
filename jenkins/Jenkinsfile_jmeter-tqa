@@ -23,7 +23,8 @@ plf_4.3.x/addons/chat
 plf_4.3.x/addons/task-management
 plf_4.3.x/social_rest_api
 plf_4.4.x/addons/social-rdbms
-plf_4.4.x/platform-enterprise""")
+plf_4.4.x/platform-enterprise
+TQA-2250""")
 
         choice(name: 'scenarioFile', description:'The scenario to execute', choices:"""
 #--- GENERIC
@@ -124,7 +125,9 @@ PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_RELATIONSHIP_NEW.jmx
 PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_RELATIONSHIP_UPDATE.jmx
 PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_SPACE_ACTIVITY_NEW.jmx
 PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_USERS_RELATIONSHIP_UPDATE.jmx
-PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_USER_RELATIONSHIP_NEW.jmx""")
+PERF_PLF_ENT_INTRANET_SOCIAL_REST_WRITE_USER_RELATIONSHIP_NEW.jmx
+#---- TQA ISSUES
+PERF_PLF_INTRANET_ACCESS_USER_MANAGEMENT.jmx""")
 
         choice(name: 'userDatasetName', description: 'The set of users to use', choices: """
 #--- GENERIC
@@ -201,6 +204,8 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         string(name: 'VUGMaxThread', defaultValue: '10000', description: '-JexpVUGMaxThread for tests execution')
         string(name: 'VUGUpStep', defaultValue: '100', description: '-JexpVUGUpStep')
         string(name: 'thinkTime', defaultValue: '20000', description: '-JexpThinkTime')
+        string(name: 'rootUserName', defaultValue: 'root', description: '-JexpRootUserName')
+        string(name: 'rootPassword', defaultValue: 'gtn', description: '-JexpRootPassword')
 
         string(name: 'scenarioBaseDir', defaultValue:'performance/src/test/jmeter/', description:'base dir of the scenario on the repository')
     }
@@ -230,6 +235,8 @@ PERF_PLF_INTRANET_EXPRESSV1_Search_Terms.csv
         BENCHENV_expSearchDatasetName = "${params.unifiedSearchDataset}"
         BENCHENV_expSearchType = "${params.unifiedSearchFeature}"
         BENCHENV_expThinkTime = "${params.thinkTime}"
+        BENCHENV_expRootUserName = "${params.rootUserName}"
+        BENCHENV_expRootPassword = "${params.rootPassword}"
         BENCHENV_expRampup = "10"
         BENCHENV_expVUGUpStep = "${params.VUGUpStep}"
         BENCHENV_expVUGDownDuration = "15"
